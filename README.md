@@ -47,3 +47,6 @@ npm run make-admin -- <user_id>
 
 ## Deployment
 Deploy on Vercel or any Node.js hosting platform. Ensure all environment variables are set in the production environment.
+
+### Production
+Currently deployed to Vercel with Postgres database.

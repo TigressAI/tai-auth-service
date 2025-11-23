@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id // This will be the Clerk User ID
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productAccess UserProductAccess[]
+  usageLogs     UsageLog[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g., "rie", "copilot"
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  plans       Plan[]
+  userAccess  UserProductAccess[]
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  key         String   // e.g., "free", "pro"
+  name        String
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userAccess  UserProductAccess[]
+
+  @@unique([productId, key])
+}
+
+model UserProductAccess {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  planId    String?
+  plan      Plan?    @relation(fields: [planId], references: [id])
+  
+  isActive  Boolean  @default(true)
+  grantedAt DateTime @default(now())
+  expiresAt DateTime?
+
+  @@unique([userId, productId])
+}
+
+model UsageLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  resource  String?
+  metadata  String?  // JSON string
+  timestamp DateTime @default(now())
+}
